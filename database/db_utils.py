@@ -5,6 +5,15 @@ import sqlite3
 import pandas as pd
 
 def create_table(connection, name, database='eod', replace_existing=False):
+    '''
+    Creates a table into database.
+
+    Parameters:
+    -----------
+    connection: str
+        
+
+    '''
 
     with connection:
         cursor = connection.cursor()
@@ -66,7 +75,7 @@ def insert_rows(connection, table, data, database='eod'):
 
         cursor = connection.cursor()
 
-        if database == 'eod':
+        if database == 'eod' or 'test_memory':
             query_string = "REPLACE INTO {}(Time, Open, High, Low, Close, Adj_Close, Volume) VALUES(?, ?, ?, ?, ?, ?, ?)"
 
         cursor.executemany(query_string.format(table), data)
@@ -80,7 +89,7 @@ def read_table(connection, table, database='eod', start=None, end=None,
     with connection:
         cursor = connection.cursor()
 
-        if database == 'eod':
+        if database == 'eod' or 'test_eod_db':
 
             if kind is None:
                 kind = '*'

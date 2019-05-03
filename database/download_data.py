@@ -41,6 +41,8 @@ def get_from_yahoo(tickers, start=None, end=None, sleep=1):
     # dict to store the downloaed data
     data = {}
 
+    base_time_string = '{}T08:00:00+00:00'
+
     # if tickers is single string, convert it to list
     if not isinstance(tickers, list):
         tickers = [tickers]
@@ -49,12 +51,12 @@ def get_from_yahoo(tickers, start=None, end=None, sleep=1):
     if start is None:
         start = arrow.get(0).timestamp  # 1970-01-01
     else:
-        start = arrow.get(start).timestamp
+        start = arrow.get(base_time_string.format(start)).timestamp
 
     if end is None:
         end = arrow.utcnow().timestamp
     else:
-        end = arrow.get(end).timestamp
+        end = arrow.get(base_time_string.format(end)).timestamp
 
     # Start Session
     session = requests.session()

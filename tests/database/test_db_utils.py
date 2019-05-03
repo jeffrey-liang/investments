@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.append('../')
+sys.path.append('../../database')
 
 import pytest
 import sqlite3
@@ -181,8 +181,59 @@ def test_insert_rows():
         assert(data[index][6] == row['Volume'])
         index += 1
 
+    # insert into non-existing table
     with pytest.raises(sqlite3.OperationalError):
         insert_rows(connection, 'ABC', input_data)
+
+    # insert twice
+
+    connection = sqlite3.connect(':memory:')
+    with connection:
+        cursor = connection.cursor()
+
+        query_string = 'CREATE TABLE {}(Time TEXT PRIMARY KEY, Open REAL, High REAL, Low REAL, Close REAL, Adj_Close REAL, Volume REAL)'
+
+        # create table
+        cursor.execute(query_string.format('SPY'))
+
+    # insert rows of spy dataframe
+    insert_rows(connection, 'SPY', spy.loc['2019-01-01':'2019-01-03'])
+    insert_rows(connection, 'SPY', spy.loc['2019-01-03':'2019-01-07'])
+
+    with connection:
+
+        query_string = "SELECT * FROM SPY"
+
+        data = cursor.execute(query_string).fetchall()
+
+    index = 0
+    for time, row in spy.iterrows():
+        assert(data[index][0] == time)
+        assert(data[index][1] == row['Open'])
+        assert(data[index][2] == row['High'])
+        assert(data[index][3] == row['Low'])
+        assert(data[index][4] == row['Close'])
+        assert(data[index][5] == row['Adj_Close'])
+        assert(data[index][6] == row['Volume'])
+        index += 1
+
+    with connection:
+
+        cursor = connection.cursor()
+        query_string = "SELECT * FROM SPY"
+
+        data = cursor.execute(query_string).fetchall()
+
+    index = 0
+    for time, row in spy.iterrows():
+        assert(data[index][0] == time)
+        assert(data[index][1] == row['Open'])
+        assert(data[index][2] == row['High'])
+        assert(data[index][3] == row['Low'])
+        assert(data[index][4] == row['Close'])
+        assert(data[index][5] == row['Adj_Close'])
+        assert(data[index][6] == row['Volume'])
+        index += 1
 
 
 def test_read_table():
@@ -191,7 +242,7 @@ def test_read_table():
 
     test_spy = spy.copy()
     test_spy.index.name = 'Time'
-    test_spy.rename(columns={'Adj_Close': 'Adj_Close'}, inplace=True)
+    #test_spy.rename(columns={'Adj_Close': 'Adj_Close'}, inplace=True)
     test_spy = test_spy.astype('float64')
 
     input_data = []
